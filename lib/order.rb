@@ -1,6 +1,6 @@
 class Order
 
-  attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals
+  attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals, :shipping_lines
 
   def add_shopify_obj shopify_order, shopify_api
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
@@ -31,6 +31,7 @@ class Order
     end
 
     @totals_order = shopify_order['total_price'].to_f
+    @shipping_lines = shopify_order['shipping_lines'].to_a
 
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|
@@ -67,9 +68,12 @@ class Order
     end
 
     @shipments = Array.new
-    shopify_order['fulfillments'].each do |shopify_shipment|
-      shipment = Shipment.new
-      @shipments << shipment.add_shopify_obj(shopify_shipment, shopify_api, self)
+    # only associate shipments with ecommerce orders
+    if shopify_order['source'] == 'browser'
+      shopify_order['fulfillments'].each_with_index do |shopify_shipment, idx|
+        shipment = Shipment.new
+        @shipments << shipment.add_shopify_obj(shopify_shipment, shopify_api, self, @shipping_lines[idx])
+      end
     end
 
     self
@@ -81,7 +85,6 @@ class Order
       'shopify_order_number' => @order_number.to_s,
       'shopify_id' => @shopify_id.to_s,
       'source' => @source,
-      'channel' => @source,
       'status' => @status,
       'email' => @email,
       'currency' => @currency,

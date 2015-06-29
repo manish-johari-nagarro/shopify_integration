@@ -2,16 +2,20 @@ class Shipment
 
   attr_reader :id, :shopify_id, :shopify_order_id, :status
 
-  def add_shopify_obj shopify_shipment, shopify_api, shopify_order=nil
+  def add_shopify_obj shopify_shipment, shopify_api, shopify_order=nil, shipping_line=nil
+
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @shopify_id = shopify_shipment['id']
     @shopify_order_id = shopify_shipment['order_id']
     @source = Util.shopify_host shopify_api.config
-    order = shopify_order || shopify_api.order(@shopify_order_id).first
-    @email = order.email
+    @order = shopify_order || shopify_api.order(@shopify_order_id).first
+    @email = @order.email
     @status = Util.wombat_shipment_status shopify_shipment['status']
-    @shipping_method = (shopify_shipment['tracking_company'] || 'tracking company not set') + ' / ' +
-                       (shopify_shipment['service'] || 'service not set')
+
+    shipping_line ||= {}
+    @cost = shipping_line['price']
+    @shipping_method = shipping_line['title']
+    
     @tracking = shopify_shipment['tracking_number']
     @shipped_at = shopify_shipment['created_at']
 
@@ -22,8 +26,8 @@ class Shipment
       @line_items << line_item.add_shopify_obj(shopify_li, shopify_api)
     end
 
-    @shipping_address = order.shipping_address
-    @billing_address = order.billing_address
+    @shipping_address = @order.shipping_address
+    @billing_address = @order.billing_address
 
     self
   end
@@ -52,7 +56,7 @@ class Shipment
       'shopify_id' => @shopify_id.to_s,
       'order_id' => @store_name.upcase + '-' + @shopify_order_id.to_s,
       'source' => @source,
-      'stock_location' => @source == 'pos' ? "36 White Street" : "Warehouse",
+      'stock_location' => @source == 'pos' ? (Util.config['pos_stock_location'] || @source) : (Util.config['ecomm_stock_location'] || @source),
       'email' => @email,
       'status' => @status,
       'shipping_method' => @shipping_method,
@@ -60,24 +64,9 @@ class Shipment
       'shipped_at' => @shipped_at,
       'shipping_address' => @shipping_address,
       'billing_address' => @billing_address,
-      'items' => Util.wombat_array(@line_items)
+      'items' => Util.wombat_array(@line_items),
+      'cost' => @cost,
+      'totals' => @order.totals
     }
   end
-
-  # def self.wombat_obj_from_order order
-  #   binding.pry
-  #   wombat_obj = order.wombat_obj
-  #   {
-  #     'id' => wombat_obj['id'],
-  #     'shopify_order_id' => wombat_obj['shopify_id'],
-  #     'order_id' => wombat_obj['id'],
-  #     'email' => wombat_obj['email'],
-  #     'channel' => wombat_obj['source'],
-  #     'shipping_address' => wombat_obj['shipping_address'],
-  #     'billing_address' => wombat_obj['billing_address'],
-  #     'items' => wombat_obj['line_items'],
-  #     'totals' => wombat_obj['totals']
-  #   }
-  # end
-
 end

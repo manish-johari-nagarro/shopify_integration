@@ -1,5 +1,6 @@
 class Util
 
+
   def self.wombat_array objs
     wombat_array = Array.new
     objs.each do |obj|
@@ -50,6 +51,14 @@ class Util
 
   def self.shopify_host wombat_config
     wombat_config['shopify_host']
+  end
+
+  def self.set_config wombat_config 
+    @@config ||= wombat_config
+  end
+
+  def self.config
+    @@config || {}
   end
 
 end

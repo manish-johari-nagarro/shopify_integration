@@ -10,6 +10,7 @@ class ShopifyAPI
   def initialize payload, config={}
     @payload = payload
     @config = config
+    Util.set_config @config
   end
 
   def get_products

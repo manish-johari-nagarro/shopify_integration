@@ -22,7 +22,7 @@ class Customer
 
   def wombat_obj
     {
-      'id' => @shopify_id.to_s,
+      'id' => "SHOPIFY-#{@shopify_id.to_s}",
       'shopify_id' => @shopify_id.to_s,
       'source' => @source,
       'firstname' => @firstname,

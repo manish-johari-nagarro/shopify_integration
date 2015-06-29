@@ -34,6 +34,11 @@ module Shopify
     def final_resource resource
       if !@config['since'].nil?
         resource += ".json?updated_at_min=#{@config['since']}"
+        resource += "&status=#{@config['status']}" unless @config['status'].nil?
+        resource += "&fulfillment_status=#{@config['fulfillment_status']}" unless @config['fulfillment_status'].nil?
+        resource += "&financial_status=#{@config['financial_status']}" unless @config['financial_status'].nil?
+        resource += "&limit=#{@config['limit']}" unless @config['limit'].nil?
+        resource += "&since_id=#{@config['since_id']}" unless @config['since_id'].nil?
       elsif !@config['id'].nil?
         resource += "/#{@config['id']}.json"
       else

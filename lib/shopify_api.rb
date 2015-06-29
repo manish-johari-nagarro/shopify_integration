@@ -57,7 +57,7 @@ class ShopifyAPI
   end
 
   def get_shipments
-    shipments = Array.new
+    shipments = []
     get_objs('orders', Order).each do |order|
       shipments += shipments(order.shopify_id)
     end
@@ -65,29 +65,24 @@ class ShopifyAPI
   end
 
   def get_orders
-    get_webhook_results 'orders', Order
-    orders = Util.wombat_array(get_objs('orders', Order))
-
-    response = {
-      'objects' => orders,
-      'message' => "Successfully retrieved #{orders.length} orders " +
-                   "from Shopify."
-    }
+    orders = get_objs('orders', Order)
+    response = get_webhook_results 'orders', orders, false
 
     # config to return corresponding shipments
     if @config[:create_shipments].to_i == 1
-      shipments = Array.new
+      shipments = []
       orders.each do |order|
-        shipments << Shipment.wombat_obj_from_order(order)
+        order.shipments.each do |shipment|
+          shipments << shipment.wombat_obj
+        end
       end
-
-      response.merge({
+      response.merge!({
         'additional_objs' => shipments,
         'additional_objs_name' => 'shipment'
       })
-    else
-      response
     end
+
+    response
   end
 
   def add_product

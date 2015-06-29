@@ -4,6 +4,9 @@ require "endpoint_base"
 require_all 'lib'
 
 class ShopifyIntegration < EndpointBase::Sinatra::Base
+
+  require "pry" if ShopifyIntegration.development?
+
   post '/*_shipment' do # /add_shipment or /update_shipment
     summary = Shopify::Shipment.new(@payload['shipment'], @config).ship!
 
@@ -40,15 +43,19 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
           response['objects'].each do |obj|
             ## Check if object has a metafield with a Wombat ID in it,
             ## if so change object ID to that prior to adding to Wombat
-            wombat_id = shopify.wombat_id_metafield obj_name, obj['shopify_id']
-            unless wombat_id.nil?
-              obj['id'] = wombat_id
-            end
+
+            # seriously? query each id separately?
+            # wombat_id = shopify.wombat_id_metafield obj_name, obj['shopify_id']
+            # unless wombat_id.nil?
+            #   obj['id'] = wombat_id
+            # end
 
             ## Add object to Wombat
             add_object obj_name, obj
           end
-          add_parameter 'since', Time.now.utc.iso8601
+          last_object = response['objects'].last
+          # add_parameter 'since_id', last_object['shopify_id'] unless last_object.nil?
+          # add_parameter 'since', Time.now.utc.iso8601
 
         when 'add'
           ## This will do a partial update in Wombat, only the new key
@@ -63,8 +70,7 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
                                 @payload[obj_name]['id']
           end
 
-        if response.has_key?('additional_objs') &&
-           response.has_key?('additional_objs_name')
+        if response.has_key?('additional_objs') && response.has_key?('additional_objs_name')
           response['additional_objs'].each do |obj|
             add_object response['additional_objs_name'], obj
           end
@@ -77,6 +83,7 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
           return result 200, response['message']
         end
       rescue => e
+        binding.pry
         print e.cause
         print e.backtrace.join("\n")
         result 500, (e.try(:response) ? e.response : e.message)

@@ -1,13 +1,13 @@
 class Order
 
-  attr_reader :shopify_id, :email, :shipping_address, :billing_address
+  attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals
 
   def add_shopify_obj shopify_order, shopify_api
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @order_number = shopify_order['order_number']
     @shopify_id = shopify_order['id']
-    @source = Util.shopify_host shopify_api.config
-    @status = 'completed'
+    @source = shopify_order['source']
+    @status = 'complete'
     @email = shopify_order['email']
     @currency = shopify_order['currency']
     @placed_on = shopify_order['created_at']
@@ -18,6 +18,7 @@ class Order
     shopify_order['shipping_lines'].each do |shipping_line|
       @totals_shipping += shipping_line['price'].to_f
     end
+
     @payments = Array.new
     @totals_payment = 0.00
     shopify_api.transactions(@shopify_id).each do |transaction|
@@ -28,7 +29,9 @@ class Order
         @payments << payment.add_shopify_obj(transaction, shopify_api)
       end
     end
+
     @totals_order = shopify_order['total_price'].to_f
+
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|
       line_item = LineItem.new
@@ -63,12 +66,19 @@ class Order
       }
     end
 
+    @shipments = Array.new
+    shopify_order['fulfillments'].each do |shopify_shipment|
+      shipment = Shipment.new
+      @shipments << shipment.add_shopify_obj(shopify_shipment, shopify_api, self)
+    end
+
     self
   end
 
   def wombat_obj
     {
-      'id' => @store_name.upcase + '-' + @order_number.to_s,
+      'id' => @store_name.upcase + '-' + @shopify_id.to_s,
+      'shopify_order_number' => @order_number.to_s,
       'shopify_id' => @shopify_id.to_s,
       'source' => @source,
       'channel' => @source,
@@ -100,7 +110,8 @@ class Order
       ],
       'shipping_address' => @shipping_address,
       'billing_address' => @billing_address,
-      'payments' => Util.wombat_array(@payments)
+      'payments' => Util.wombat_array(@payments),
+      'shipments' => Util.wombat_array(@shipments)
     }
   end
 

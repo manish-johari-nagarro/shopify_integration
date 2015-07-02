@@ -1,3 +1,4 @@
+require 'ostruct'
 class Order
 
   attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals, :shipping_lines
@@ -14,10 +15,6 @@ class Order
     @totals_item = shopify_order['total_line_items_price'].to_f
     @totals_tax = shopify_order['total_tax'].to_f
     @totals_discounts = shopify_order['total_discounts'].to_f
-    @totals_shipping = 0.00
-    shopify_order['shipping_lines'].each do |shipping_line|
-      @totals_shipping += shipping_line['price'].to_f
-    end
 
     @payments = Array.new
     @totals_payment = 0.00
@@ -30,8 +27,16 @@ class Order
       end
     end
 
-    @totals_order = shopify_order['total_price'].to_f
     @shipping_lines = shopify_order['shipping_lines'].to_a
+    @totals_shipping = 0.00
+    @shipping_lines.each do |shipping_line|
+      @totals_shipping += shipping_line['price'].to_f
+      payment = Payment.new
+      # add shipping charge as payment otherwise spree will complain
+      @payments << payment.add_shopify_obj(OpenStruct.new(amount: shipping_line['price'], gateway: shopify_order['gateway']), shopify_api)
+    end
+
+    @totals_order = shopify_order['total_price'].to_f
 
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|

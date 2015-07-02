@@ -1,6 +1,5 @@
 class Util
 
-
   def self.wombat_array objs
     wombat_array = Array.new
     objs.each do |obj|

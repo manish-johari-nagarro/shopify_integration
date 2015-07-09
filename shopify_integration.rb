@@ -55,7 +55,7 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
           end
           last_object = response['objects'].last
           # add_parameter 'since_id', last_object['shopify_id'] unless last_object.nil?
-          # add_parameter 'since', Time.now.utc.iso8601
+          # add_parameter 'since', last_object['updated_at'] unless last_object.nil? # Time.now.utc.iso8601
 
         when 'add'
           ## This will do a partial update in Wombat, only the new key

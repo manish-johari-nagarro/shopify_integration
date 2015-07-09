@@ -65,6 +65,11 @@ class ShopifyAPI
     get_webhook_results 'shipments', shipments, false
   end
 
+  def get_gift_cards
+    gift_cards = get_objs('gift_cards', GiftCard)
+    get_webhook_results 'gift_cards', gift_cards, false
+  end
+
   def get_orders
     orders = get_objs('orders', Order)
     response = get_webhook_results 'orders', orders, false

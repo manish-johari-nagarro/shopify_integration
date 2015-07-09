@@ -9,7 +9,7 @@ class LineItem
     @name = shopify_li['name']
     @quantity = shopify_li['quantity'].to_i
     @price = shopify_li['price'].to_f
-    @is_gift_card = shopify_li['gift_card']
+    @is_gift_card = shopify_li['name'].downcase.include? "gift card"
     self
   end
 

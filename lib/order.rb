@@ -10,6 +10,7 @@ class Order
     @source = shopify_order['source']
     @status = 'complete'
     @email = shopify_order['email']
+    @shopify_customer_id = (shopify_order['customer'].presence || {})['id']
     @currency = shopify_order['currency']
     @placed_on = shopify_order['created_at']
     @totals_item = shopify_order['total_line_items_price'].to_f
@@ -92,6 +93,7 @@ class Order
       'source' => @source,
       'status' => @status,
       'email' => @email,
+      'shopify_customer_id' => @shopify_customer_id,
       'currency' => @currency,
       'placed_on' => @placed_on,
       'totals' => {

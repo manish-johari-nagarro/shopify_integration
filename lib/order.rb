@@ -9,6 +9,7 @@ class Order
     @shopify_id = shopify_order['id']
     @source = shopify_order['source']
     @status = 'complete'
+    @note = shopify_order['note']
     @email = shopify_order['email']
     @shopify_customer_id = (shopify_order['customer'].presence || {})['id']
     @currency = shopify_order['currency']
@@ -92,6 +93,7 @@ class Order
       'shopify_id' => @shopify_id.to_s,
       'source' => @source,
       'status' => @status,
+      'note' => @note,
       'email' => @email,
       'shopify_customer_id' => @shopify_customer_id,
       'currency' => @currency,

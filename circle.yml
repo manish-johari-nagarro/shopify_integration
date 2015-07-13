@@ -17,8 +17,13 @@ database:
   override:
     - sleep 1
 deployment:
-  hub:
-    branch: feature/bestmade
+  integration:
+    branch: integration
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
+      - docker push quay.io/ginlane/shopify_integration:integration
+  any:
+    branch: /.*/
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
       - docker push quay.io/ginlane/shopify_integration

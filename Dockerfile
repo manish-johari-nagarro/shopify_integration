@@ -17,8 +17,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential zlib1g-dev libreadline6-dev libyaml-dev libssl-dev \
     git && \
-    locale-gen C.UTF-8 && \
-    /usr/sbin/update-locale LANG=C.UTF-8 && \
     gem install bundler --no-rdoc --no-ri && \
     /bin/bash -l -c "bundle install" && \
     rm -f /tmp/Gemfile /tmp/Gemfile.lock && \

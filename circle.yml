@@ -21,6 +21,7 @@ deployment:
     branch: integration
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
+      - docker tag quay.io/ginlane/shopify_integration quay.io/ginlane/shopify_integration:integration
       - docker push quay.io/ginlane/shopify_integration:integration
   any:
     branch: /.*/

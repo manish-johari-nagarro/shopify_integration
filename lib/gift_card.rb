@@ -4,7 +4,7 @@ class GiftCard
     @shopify_id = shopify_gift_card['id']
     @last_characters = shopify_gift_card['last_characters']
     @shopify_customer_id = shopify_gift_card['customer_id']
-    @initial_balance = shopify_gift_card['initial_balance']
+    @initial_value = shopify_gift_card['initial_value']
     @balance = shopify_gift_card['balance']
     @note = shopify_gift_card['note']
     @currency = shopify_gift_card['currency']
@@ -19,7 +19,7 @@ class GiftCard
       'id' => "SHOPIFY-#{@shopify_id.to_s}",
       'shopify_reference' => @last_characters,
       'shopify_customer_id' => @shopify_customer_id,
-      'initial_balance' => @initial_balance,
+      'initial_value' => @initial_value,
       'amount' => @balance,
       'note' => @note,
       'currency' => @currency,

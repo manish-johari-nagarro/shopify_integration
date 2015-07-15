@@ -9,7 +9,6 @@ module Shopify
           params += "#{key}=#{value}"
         end
       end
-
       response = RestClient.get shopify_url + (final_resource resource) + params
       JSON.parse response.force_encoding("utf-8")
     end
@@ -39,6 +38,7 @@ module Shopify
         resource += "&financial_status=#{@config['financial_status']}" unless @config['financial_status'].nil?
         resource += "&limit=#{@config['limit']}" unless @config['limit'].nil?
         resource += "&since_id=#{@config['since_id']}" unless @config['since_id'].nil?
+        resource += "&page=#{@config['page']}" unless @config['page'].nil?
       elsif !@config['id'].nil?
         resource += "/#{@config['id']}.json"
       else

@@ -54,7 +54,11 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
             add_object obj_name, obj
           end
           last_object = response['objects'].last
-          # add_parameter 'since_id', last_object['shopify_id'] unless last_object.nil?
+
+          unless last_object.nil?
+            add_parameter 'since_id', last_object['shopify_id']
+            add_parameter 'page', @config['page'].to_i + 1 unless @config['page'].nil?
+          end
           # add_parameter 'since', last_object['updated_at'] unless last_object.nil? # Time.now.utc.iso8601
 
         when 'add'

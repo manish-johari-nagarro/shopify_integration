@@ -1,6 +1,6 @@
-unicorn_worker_processes = ENV["UNICORN_WORKER_PROCESSES"].to_i
+unicorn_worker_processes = ENV["SHOPIFY_UNICORN_WORKER_PROCESSES"].to_i
 if unicorn_worker_processes == 0
-  worker_processes 2
+  worker_processes 1
 else
   worker_processes unicorn_worker_processes
 end

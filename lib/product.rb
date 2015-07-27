@@ -58,6 +58,11 @@ class Product
     end
 
     @variants = Array.new
+
+    # flat import -- each product is its own variant
+    variant = Variant.new
+    @variants << variant.add_wombat_obj(wombat_product)
+
     unless wombat_product['variants'].nil?
       wombat_product['variants'].each do |wombat_variant|
         variant = Variant.new

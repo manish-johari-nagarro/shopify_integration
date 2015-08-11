@@ -56,7 +56,7 @@ class Shipment
       'shopify_id' => @shopify_id.to_s,
       'order_id' => @store_name.upcase + '-' + @shopify_order_id.to_s,
       'source' => @source,
-      'stock_location' => @source == 'pos' ? (Util.config['pos_stock_location'] || @source) : (Util.config['ecomm_stock_location'] || @source),
+      'stock_location' => @source == 'pos' ? Util.config['pos_stock_location'] : Util.config['ecomm_stock_location'],
       'email' => @email,
       'status' => @status,
       'shipping_method' => @shipping_method,

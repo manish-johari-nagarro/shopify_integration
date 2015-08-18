@@ -1,7 +1,7 @@
 require 'ostruct'
 class Order
 
-  attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals, :shipping_lines
+  attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals, :shipping_lines, :placed_on
 
   def add_shopify_obj shopify_order, shopify_api
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
@@ -39,6 +39,8 @@ class Order
     end
 
     @totals_order = shopify_order['total_price'].to_f
+    @item_total = @totals_order - @payments.inject(0) {|sum, payment| sum += payment.amount.to_f}
+    @payments << (Payment.new).add_shopify_obj(OpenStruct.new(amount: @item_total, gateway: 'shopify_payments'), shopify_api)
 
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|
@@ -75,12 +77,14 @@ class Order
     end
 
     @shipments = Array.new
-    # only associate shipments with ecommerce orders
     if shopify_order['source'] == 'browser'
       shopify_order['fulfillments'].each_with_index do |shopify_shipment, idx|
         shipment = Shipment.new
         @shipments << shipment.add_shopify_obj(shopify_shipment, shopify_api, self, @shipping_lines[idx])
       end
+    else
+      shipment = Shipment.new
+      @shipments << shipment.add_shopify_obj_from_pos_line_items(shopify_order['line_items'], shopify_api, self)
     end
 
     self
@@ -111,10 +115,10 @@ class Order
           'name' => 'Tax',
           'value' => @totals_tax
         },
-        {
-          'name' => 'Shipping',
-          'value' => @totals_shipping
-        },
+        # {
+        #   'name' => 'Shipping',
+        #   'value' => @totals_shipping
+        # },
         {
           'name' => 'Discounts',
           'value' => @totals_discounts

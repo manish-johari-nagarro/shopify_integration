@@ -1,4 +1,5 @@
 class Payment
+  attr_accessor :amount
 
   def add_shopify_obj shopify_transaction, shopify_api
     @amount = shopify_transaction.amount

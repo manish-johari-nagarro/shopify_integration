@@ -6,7 +6,7 @@ class Shipment
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @shopify_id = shopify_shipment['id']
     @shopify_order_id = shopify_shipment['order_id']
-    @source = Util.shopify_host shopify_api.config
+    @source = 'browser'
     @order = shopify_order || shopify_api.order(@shopify_order_id).first
     @email = @order.email
     @status = Util.wombat_shipment_status shopify_shipment['status']
@@ -76,13 +76,14 @@ class Shipment
   end
 
   def wombat_obj
+    @stock_location = @source == 'pos' ? Util.config['pos_stock_location'] : Util.config['ecomm_stock_location']
     {
       'id' => @store_name.upcase + '-' + @shopify_order_id.to_s,
       'shopify_order_id' => @shopify_order_id.to_s,
       'shopify_id' => @shopify_id.to_s,
       'order_id' => @store_name.upcase + '-' + @shopify_order_id.to_s,
       'source' => @source,
-      'stock_location' => (@source == 'pos' ? Util.config['pos_stock_location'] : Util.config['ecomm_stock_location']),
+      'stock_location' => @stock_location,
       'email' => @email,
       'status' => @status,
       'shipping_method' => @shipping_method,

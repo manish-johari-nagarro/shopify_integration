@@ -94,6 +94,7 @@ class ShopifyAPI
   def add_product
     product = Product.new
     product.add_wombat_obj @payload['product'], self
+
     result = api_post 'products.json', product.shopify_obj
 
     {
@@ -109,30 +110,15 @@ class ShopifyAPI
 
     ## Using shopify_obj_no_variants is a workaround until
     ## specifying variants' Shopify IDs is added
-    master_result = api_put(
+    result = api_put(
       "products/#{product.shopify_id}.json",
       product.shopify_obj_no_variants
     )
 
-    product.variants.each do |variant|
-      if variant_id = (variant.shopify_id || find_variant_shopify_id(product.shopify_id, variant.sku))
-        api_put(
-          "variants/#{variant_id}.json",
-          variant.shopify_obj
-        )
-      else
-        begin
-          api_post("products/#{product.shopify_id}/variants.json", variant.shopify_obj)
-        rescue RestClient::UnprocessableEntity
-          # theres already a variant with same options, bail.
-        end
-      end
-    end
-
     {
-      'objects' => master_result,
+      'objects' => result,
       'message' => "Product with Shopify ID of " +
-                   "#{master_result['product']['id']} was updated."
+                   "#{result['product']['id']} was updated."
     }
   end
 

@@ -98,8 +98,7 @@ class ShopifyAPI
 
     {
       'objects' => result,
-      'message' => "Product added with Shopify ID of " +
-                   "#{result['product']['id']} was added."
+      'message' => "Product added with Shopify ID of #{result['product']['id']} was added."
     }
   end
 
@@ -116,8 +115,7 @@ class ShopifyAPI
 
     {
       'objects' => result,
-      'message' => "Product with Shopify ID of " +
-                   "#{result['product']['id']} was updated."
+      'message' => "Product with Shopify ID of #{result['product']['id']} was updated."
     }
   end
 
@@ -128,8 +126,7 @@ class ShopifyAPI
 
     {
       'objects' => result,
-      'message' => "Customer with Shopify ID of " +
-                   "#{result['customer']['id']} was added."
+      'message' => "Customer with Shopify ID of #{result['customer']['id']} was added."
     }
   end
 
@@ -150,8 +147,7 @@ class ShopifyAPI
 
     {
       'objects' => result,
-      'message' => "Customer with Shopify ID of " +
-                   "#{result['customer']['id']} was updated."
+      'message' => "Customer with Shopify ID of #{result['customer']['id']} was updated."
     }
   end
 
@@ -215,8 +211,7 @@ class ShopifyAPI
 
   def get_webhook_results obj_name, obj, get_objs = true
     objs = Util.wombat_array(get_objs ? get_objs(obj_name, obj) : obj)
-    get_reply objs, "Successfully retrieved #{objs.length} #{obj_name} " +
-                    "from Shopify."
+    get_reply objs, "Successfully retrieved #{objs.length} #{obj_name} from Shopify."
   end
 
   def get_reply objs, message

@@ -30,8 +30,7 @@ class ShopifyAPI
 
     {
       'objects' => Util.wombat_array(products),
-      'message' => "Successfully retrieved #{products.length} products " +
-                   "from Shopify.",
+      'message' => "Successfully retrieved #{products.length} products from Shopify.",
       'additional_objs' => inventories,
       'additional_objs_name' => 'inventory'
     }
@@ -160,16 +159,15 @@ class ShopifyAPI
     inventory = Inventory.new
     inventory.add_wombat_obj @payload['inventory']
     puts "INV: " + @payload['inventory'].to_json
-    shopify_id = inventory.shopify_id.blank? ?
-                    find_product_shopify_id_by_sku(inventory.sku) : inventory.shopify_id
+    shopify_id = inventory.shopify_id.blank? ? find_product_shopify_id_by_sku(inventory.sku) : inventory.shopify_id
 
     message = 'Could not find item with SKU of ' + inventory.sku
+    
     unless shopify_id.blank?
-      result = api_put "variants/#{shopify_id}.json",
-                       {'variant' => inventory.shopify_obj}
-      message = "Set inventory of SKU #{inventory.sku} " +
-                "to #{inventory.quantity}."
+      result = api_put "variants/#{shopify_id}.json", {'variant' => inventory.shopify_obj}
+      message = "Set inventory of SKU #{inventory.sku} " +  "to #{inventory.quantity}."
     end
+
     {
       'objects' => result,
       'message' => message
@@ -212,8 +210,7 @@ class ShopifyAPI
   def shipments order_id
     get_objs "orders/#{order_id}/fulfillments", Shipment
   end
-
-
+ 
   private
 
   def get_webhook_results obj_name, obj, get_objs = true
@@ -243,7 +240,6 @@ class ShopifyAPI
       obj.add_shopify_obj shopify_objs.values.first, self
       objs << obj
     end
-
     objs
   end
 
@@ -262,8 +258,8 @@ class ShopifyAPI
     current_page = 1
 
     while current_page <= pages do
-      products = api_get 'products',
-                         {'limit' => page_size, 'page' => current_page}
+      products = api_get('products',{'limit' => page_size, 'page' => current_page})
+      sleep 3
       current_page += 1
       products['products'].each do |product|
         product['variants'].each do |variant|

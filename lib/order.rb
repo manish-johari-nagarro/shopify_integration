@@ -20,6 +20,7 @@ class Order
 
     @payments = Array.new
     @totals_payment = 0.00
+    sleep 1
     shopify_api.transactions(@shopify_id).each do |transaction|
       if (transaction.kind == 'capture' or transaction.kind == 'sale') and
           transaction.status == 'success'

@@ -43,6 +43,7 @@ class Product
     @wombat_id = wombat_product['id'].to_s
     @name = wombat_product['shopify_name'].blank? ? wombat_product['shopify_name'] : wombat_product['name']
     @description = wombat_product['description']
+    @product_type = wombat_product['sku']
 
     @options = Array.new
     unless wombat_product['options'].blank?
@@ -108,7 +109,7 @@ class Product
       'product'=> {
         'title'=> @name,
         'body_html'=> @description,
-        'product_type' => 'None',
+        'product_type' => @product_type,
         'options' => Util.shopify_array(@options),
         'variants'=> Util.shopify_array(@variants).map {|v| v["variant"]},
         'images' => Util.shopify_array(@images)

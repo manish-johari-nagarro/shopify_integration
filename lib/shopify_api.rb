@@ -253,7 +253,7 @@ class ShopifyAPI
     current_page = 1
 
     while current_page <= pages do
-      products = api_get('products',{'limit' => page_size, 'page' => current_page})
+      products = api_get('products', {'limit' => page_size, 'page' => current_page, 'product_type' => sku})
       sleep 4
       current_page += 1
       products['products'].each do |product|

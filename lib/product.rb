@@ -41,7 +41,7 @@ class Product
   def add_wombat_obj wombat_product, shopify_api
     @shopify_id = wombat_product['shopify_id']
     @wombat_id = wombat_product['id'].to_s
-    @name = wombat_product['name']
+    @name = wombat_product['shopify_name'].blank? ? wombat_product['shopify_name'] : wombat_product['name']
     @description = wombat_product['description']
 
     @options = Array.new

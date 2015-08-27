@@ -27,13 +27,13 @@ class Inventory
       'product_id' => @sku,
       'shopify_id' => @shopify_id,
       'shopify_parent_id' => @shopify_parent_id.to_s,
-      'quantity' => @quantity
+      'quantity' => @quantity.to_i
     }
   end
 
   def shopify_obj
     {
-      'inventory_quantity' => @quantity
+      'inventory_quantity' => @quantity.to_i
     }
   end
 end

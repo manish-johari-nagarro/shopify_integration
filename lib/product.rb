@@ -41,7 +41,7 @@ class Product
   def add_wombat_obj wombat_product, shopify_api
     @shopify_id = wombat_product['shopify_id']
     @wombat_id = wombat_product['id'].to_s
-    @name = wombat_product['shopify_name'].blank? ? wombat_product['shopify_name'] : wombat_product['name']
+    @name = wombat_product['shopify_name'].blank? ? wombat_product['name'] : wombat_product['shopify_name']
     @description = wombat_product['description']
     @product_type = wombat_product['sku']
 
@@ -116,11 +116,4 @@ class Product
       }
     }
   end
-
-  def shopify_obj_no_variants
-    obj_no_variants = shopify_obj
-    obj_no_variants['product'].delete('variants')
-    obj_no_variants
-  end
-
 end

@@ -106,11 +106,9 @@ class ShopifyAPI
     product = Product.new
     product.add_wombat_obj @payload['product'], self
 
-    ## Using shopify_obj_no_variants is a workaround until
-    ## specifying variants' Shopify IDs is added
     result = api_put(
       "products/#{product.shopify_id}.json",
-      product.shopify_obj_no_variants
+      product.shopify_obj
     )
 
     {

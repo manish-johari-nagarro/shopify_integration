@@ -38,6 +38,7 @@ class Variant
     @shopify_id = wombat_variant['shopify_id'] # or fetch it by sku?
     @price = wombat_variant['price'].to_f
     @sku = wombat_variant['sku']
+    @name = wombat_variant['shopify_name'].blank? ? wombat_variant['name'] : wombat_variant['shopify_name']
     @quantity = wombat_variant['quantity'].to_i
     @options = Hash.new
 
@@ -62,8 +63,10 @@ class Variant
   def shopify_obj
     {
       'variant' => {
+        'title' => @name,
         'price' => @price,
         'sku' => @sku,
+        'inventory_quantity_adjustment' => 0,
         'inventory_management' => 'shopify'
       }.merge(@options)
     }

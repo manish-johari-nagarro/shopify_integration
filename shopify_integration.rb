@@ -30,13 +30,14 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
 
         ## Add and update shouldn't come with a shopify_id, therefore when
         ## they do, it indicates Wombat resending an object.
-        if wombat_resend_add?(action_type, obj_name) ||
-             update_without_shopify_id?(action_type, obj_name)
-           return result 200
-        end
-
         shopify = ShopifyAPI.new(@payload, @config)
-        response  = shopify.send(action)
+        response = shopify.send(action)
+
+        # response = if wombat_resend_add?(action_type, obj_name)
+        #    shopify.send("update_#{obj_name}")
+        # else
+        #    shopify.send("update_#{obj_name}")
+        # end
 
         case action_type
         when 'get'
@@ -59,20 +60,15 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
             add_parameter 'since_id', last_object['shopify_id']
             add_parameter 'page', @config['page'].to_i + 1 unless @config['page'].nil?
           end
-
         when 'add'
           ## This will do a partial update in Wombat, only the new key
           ## shopify_id will be added, everything else will be the same
-          sleep 4 # this is so janky
-          add_object obj_name,
-                     { 'id' => @payload[obj_name]['id'],
-                       'shopify_id' => response['objects'][obj_name]['id'].to_s }
+          sleep 1
+          add_object obj_name, { 'id' => @payload[obj_name]['id'], 'shopify_id' => response['objects'][obj_name]['id'].to_s }
 
           ## Add metafield to track Wombat ID
-          shopify.add_metafield obj_name,
-                                response['objects'][obj_name]['id'].to_s,
-                                @payload[obj_name]['id']
-          end
+          shopify.add_metafield obj_name, response['objects'][obj_name]['id'].to_s, @payload[obj_name]['id']
+        end
 
         if response.has_key?('additional_objs') && response.has_key?('additional_objs_name')
           response['additional_objs'].each do |obj|

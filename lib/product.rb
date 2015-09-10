@@ -1,6 +1,6 @@
 class Product
 
-  attr_reader :shopify_id, :variants
+  attr_reader :shopify_id, :variants, :sku
 
   def add_shopify_obj shopify_product, shopify_api
     @shopify_id = shopify_product['id']
@@ -44,6 +44,8 @@ class Product
     @name = wombat_product['shopify_name'].blank? ? wombat_product['name'] : wombat_product['shopify_name']
     @description = wombat_product['description']
     @product_type = wombat_product['sku']
+    @vendor = wombat_product['vendor']
+    @sku = wombat_product['sku']
 
     @options = Array.new
     unless wombat_product['options'].blank?
@@ -110,8 +112,11 @@ class Product
         'title'=> @name,
         'body_html'=> @description,
         'product_type' => @product_type,
+        'vendor' => @vendor,
+        'sku' => @sku,
         'options' => Util.shopify_array(@options),
-        'images' => Util.shopify_array(@images)
+        'images' => Util.shopify_array(@images),
+        'variants'=> Util.shopify_array(@variants).map {|v| v["variant"]}
       }
     }
   end

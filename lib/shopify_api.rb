@@ -93,12 +93,24 @@ class ShopifyAPI
   def add_product
     product = Product.new
     product.add_wombat_obj @payload['product'], self
-    
-    result = api_post 'products.json', product.shopify_obj
+
+    shopify_id, variant_shopify_id = find_product_and_variant_shopify_id_by_sku(product.sku)
+
+    added_or_updated = "added"
+    result = if shopify_id.blank?
+      # we should continue adding
+      api_post 'products.json', product.shopify_obj
+    else
+      # update instead
+      product_shopify_obj = product.shopify_obj
+      product_shopify_obj["product"]["variants"][0]["id"] = variant_shopify_id
+      added_or_updated = "updated"
+      api_put "products/#{shopify_id}.json", product_shopify_obj
+    end
 
     {
       'objects' => result,
-      'message' => "Product added with Shopify ID of #{result['product']['id']} was added."
+      'message' => "Product added with Shopify ID of #{result['product']['id']} was #{added_or_updated}"
     }
   end
 
@@ -106,11 +118,8 @@ class ShopifyAPI
     product = Product.new
     product.add_wombat_obj @payload['product'], self
 
-    result = api_put(
-      "products/#{product.shopify_id}.json",
-      product.shopify_obj
-    )
-
+    result = api_put "products/#{product.shopify_id}.json", product.shopify_obj
+    
     {
       'objects' => result,
       'message' => "Product with Shopify ID of #{result['product']['id']} was updated."
@@ -133,8 +142,7 @@ class ShopifyAPI
     customer.add_wombat_obj @payload['customer'], self
 
     begin
-      result = api_put "customers/#{customer.shopify_id}.json",
-                     customer.shopify_obj
+      result = api_put "customers/#{customer.shopify_id}.json", customer.shopify_obj
     rescue RestClient::UnprocessableEntity => e
       # retries without addresses to avoid duplication bug
       customer_without_addresses = customer.shopify_obj
@@ -153,7 +161,7 @@ class ShopifyAPI
     inventory = Inventory.new
     inventory.add_wombat_obj @payload['inventory']
     puts "INV: " + @payload['inventory'].to_json
-    shopify_id = inventory.shopify_id.blank? ? find_product_shopify_id_by_sku(inventory.sku) : inventory.shopify_id
+    shopify_id = inventory.shopify_id.blank? ? find_variant_shopify_id_by_sku(inventory.sku) : inventory.shopify_id
 
     message = 'Could not find item with SKU of ' + inventory.sku
     
@@ -244,15 +252,37 @@ class ShopifyAPI
     end
   end
 
-  def find_product_shopify_id_by_sku sku
+  def find_product_and_variant_shopify_id_by_sku sku
     count = (api_get 'products/count')['count']
     page_size = 250
     pages = (count / page_size.to_f).ceil
     current_page = 1
 
     while current_page <= pages do
+      sleep 1
+      
       products = api_get('products', {'limit' => page_size, 'page' => current_page, 'product_type' => sku})
-      sleep 2
+      current_page += 1
+      products['products'].each do |product|
+        product['variants'].each do |variant|
+          return product['id'].to_s, variant['id'].to_s if variant['sku'] == sku
+        end
+      end
+    end
+
+    return nil
+  end
+
+  def find_variant_shopify_id_by_sku sku
+    count = (api_get 'products/count')['count']
+    page_size = 250
+    pages = (count / page_size.to_f).ceil
+    current_page = 1
+
+    while current_page <= pages do
+      sleep 1
+
+      products = api_get('products', {'limit' => page_size, 'page' => current_page, 'product_type' => sku})
       current_page += 1
       products['products'].each do |product|
         product['variants'].each do |variant|

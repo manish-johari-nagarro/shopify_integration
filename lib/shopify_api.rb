@@ -93,7 +93,7 @@ class ShopifyAPI
   def add_product
     product = Product.new
     product.add_wombat_obj @payload['product'], self
-
+    
     result = api_post 'products.json', product.shopify_obj
 
     {
@@ -252,7 +252,7 @@ class ShopifyAPI
 
     while current_page <= pages do
       products = api_get('products', {'limit' => page_size, 'page' => current_page, 'product_type' => sku})
-      sleep 4
+      sleep 2
       current_page += 1
       products['products'].each do |product|
         product['variants'].each do |variant|

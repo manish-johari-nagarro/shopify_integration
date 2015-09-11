@@ -90,6 +90,7 @@ class ShopifyAPI
     response
   end
 
+  # add or update
   def add_product
     product = Product.new
     product.add_wombat_obj @payload['product'], self
@@ -114,46 +115,34 @@ class ShopifyAPI
     }
   end
 
-  def update_product
-    product = Product.new
-    product.add_wombat_obj @payload['product'], self
-
-    result = api_put "products/#{product.shopify_id}.json", product.shopify_obj
-    
-    {
-      'objects' => result,
-      'message' => "Product with Shopify ID of #{result['product']['id']} was updated."
-    }
-  end
-
+  # add or update
   def add_customer
     customer = Customer.new
     customer.add_wombat_obj @payload['customer'], self
-    result = api_post 'customers.json', customer.shopify_obj
 
-    {
-      'objects' => result,
-      'message' => "Customer with Shopify ID of #{result['customer']['id']} was added."
-    }
-  end
+    shopify_id = find_customer_by_email(customer.email)
 
-  def update_customer
-    customer = Customer.new
-    customer.add_wombat_obj @payload['customer'], self
+    added_or_updated = "added"
+    result = if shopify_id.blank?
+      # we should continue adding
+      api_post 'customers.json', customer.shopify_obj
+    else
+      # update instead
+      added_or_updated = "updated"
+      begin
+        api_put "customers/#{shopify_id}.json", customer.shopify_obj
+      rescue RestClient::UnprocessableEntity => e
+        # retries without addresses to avoid duplication bug
+        customer_without_addresses = customer.shopify_obj
+        customer_without_addresses["customer"].delete("addresses")
 
-    begin
-      result = api_put "customers/#{customer.shopify_id}.json", customer.shopify_obj
-    rescue RestClient::UnprocessableEntity => e
-      # retries without addresses to avoid duplication bug
-      customer_without_addresses = customer.shopify_obj
-      customer_without_addresses["customer"].delete("addresses")
-
-      result = api_put "customers/#{customer.shopify_id}.json", customer_without_addresses
+        api_put "customers/#{shopify_id}.json", customer_without_addresses
+      end
     end
 
     {
       'objects' => result,
-      'message' => "Customer with Shopify ID of #{result['customer']['id']} was updated."
+      'message' => "Customer with Shopify ID of #{result['customer']['id']} was #{added_or_updated}"
     }
   end
 
@@ -252,6 +241,18 @@ class ShopifyAPI
     end
   end
 
+  def find_customer_by_email email
+    customers = api_get('customers/search', { 'query' => "email:#{email}"})
+
+    sleep(1.0/1.5)
+
+    customers['customers'].each do |customer|
+      return customer['id'] if customer['email'] = email
+    end
+
+    return nil
+  end
+
   def find_product_and_variant_shopify_id_by_sku sku
     count = (api_get 'products/count')['count']
     page_size = 250
@@ -259,8 +260,8 @@ class ShopifyAPI
     current_page = 1
 
     while current_page <= pages do
-      sleep 1
-      
+      sleep(1.0/1.5)
+
       products = api_get('products', {'limit' => page_size, 'page' => current_page, 'product_type' => sku})
       current_page += 1
       products['products'].each do |product|

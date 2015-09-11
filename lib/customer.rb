@@ -1,6 +1,6 @@
 class Customer
 
-  attr_reader :shopify_id
+  attr_reader :shopify_id, :email
 
   def add_shopify_obj shopify_customer, shopify_api
     @shopify_id = shopify_customer['id']

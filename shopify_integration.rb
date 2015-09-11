@@ -15,7 +15,7 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
 
   ## Supported endpoints:
   ## get_ for orders, products, inventories, shipments, customers
-  ## add_ for product, customer
+  ## add_ for product, customer -- idempotent add or update
   ## update_ for product, customer
   ## set_inventory
   post '/*_*' do |action, obj_name|
@@ -33,27 +33,12 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
         shopify = ShopifyAPI.new(@payload, @config)
         response = shopify.send(action)
 
-        # response = if wombat_resend_add?(action_type, obj_name)
-        #    shopify.send("update_#{obj_name}")
-        # else
-        #    shopify.send("update_#{obj_name}")
-        # end
-
         case action_type
         when 'get'
           response['objects'].each do |obj|
-            ## Check if object has a metafield with a Wombat ID in it,
-            ## if so change object ID to that prior to adding to Wombat
-
-            # seriously? query each id separately?
-            # wombat_id = shopify.wombat_id_metafield obj_name, obj['shopify_id']
-            # unless wombat_id.nil?
-            #   obj['id'] = wombat_id
-            # end
-
-            ## Add object to Wombat
             add_object obj_name, obj
           end
+
           last_object = response['objects'].last
           unless last_object.nil?
             # add_parameter 'since', last_object['updated_at'] unless last_object.nil? # Time.now.utc.iso8601
@@ -63,7 +48,7 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
         when 'add'
           ## This will do a partial update in Wombat, only the new key
           ## shopify_id will be added, everything else will be the same
-          sleep 1
+          sleep(1.0/1.5)
           add_object obj_name, { 'id' => @payload[obj_name]['id'], 'shopify_id' => response['objects'][obj_name]['id'].to_s }
 
           ## Add metafield to track Wombat ID
@@ -87,14 +72,6 @@ class ShopifyIntegration < EndpointBase::Sinatra::Base
         print e.backtrace.join("\n")
         result 500, (e.try(:response) ? e.response : e.message)
       end
-    end
-
-    def wombat_resend_add?(action_type, obj_name)
-      action_type == 'add' && !@payload[obj_name]['shopify_id'].nil?
-    end
-
-    def update_without_shopify_id?(action_type, obj_name)
-      action_type == 'update' && @payload[obj_name]['shopify_id'].nil? && obj_name != "shipment"
     end
 
     def skip_summary?(response, action_type)

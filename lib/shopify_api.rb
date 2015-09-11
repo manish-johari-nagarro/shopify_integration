@@ -244,7 +244,7 @@ class ShopifyAPI
   def find_customer_by_email email
     customers = api_get('customers/search', { 'query' => "email:#{email}"})
 
-    sleep(1.0/1.5)
+    sleep 1
 
     customers['customers'].each do |customer|
       return customer['id'] if customer['email'] = email
@@ -260,7 +260,7 @@ class ShopifyAPI
     current_page = 1
 
     while current_page <= pages do
-      sleep(1.0/1.5)
+      sleep 1
 
       products = api_get('products', {'limit' => page_size, 'page' => current_page, 'product_type' => sku})
       current_page += 1

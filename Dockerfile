@@ -1,6 +1,6 @@
 FROM rlister/ruby:2.1.2
 
-MAINTAINER Gin Lane Media "devops@ginlanemedia.com" 
+MAINTAINER Bestmadeco "jaime@bestmadeco.com" 
 
 ## set the locale so gems built for utf8
 ENV LC_ALL C.UTF-8

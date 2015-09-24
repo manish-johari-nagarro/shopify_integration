@@ -7,7 +7,7 @@ class Order
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @order_number = shopify_order['order_number']
     @shopify_id = shopify_order['id']
-    @source = shopify_order['source']
+    @source = 'pos'
     @status = 'complete'
     @note = shopify_order['note']
     @email = shopify_order['email']

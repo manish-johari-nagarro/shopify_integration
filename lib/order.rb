@@ -46,6 +46,7 @@ class Order
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|
       line_item = LineItem.new
+      shopify_li['total_discount'] = shopify_li['price'].to_f / @totals_item * @totals_discounts unless shopify_li['total_discount'].to_f > 0.0 or @totals_item == 0.0 or @totals_discounts == 0.0
       @line_items << line_item.add_shopify_obj(shopify_li, shopify_api)
     end
 
@@ -115,15 +116,15 @@ class Order
         {
           'name' => 'Tax',
           'value' => @totals_tax
-        },
+        }#,
         # {
         #   'name' => 'Shipping',
         #   'value' => @totals_shipping
         # },
-        {
-          'name' => 'Discounts',
-          'value' => @totals_discounts
-        }
+        #{
+        #  'name' => 'Discounts',
+        #  'value' => @totals_discounts
+        #}
       ],
       'shipping_address' => @shipping_address,
       'billing_address' => @billing_address,

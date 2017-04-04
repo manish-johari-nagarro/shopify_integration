@@ -14,15 +14,27 @@ describe Order do
         }
     }
 
-    describe  'line_items' do
-      let(:line_items) { [] }
+    describe  'line_item' do
+      let(:line_items) { [ line_item ] }
 
-      it 'are forwared' do
-        subject.add_shopify_obj shopify_order, shopify_api
+      context "of normal kind" do
+        let(:line_item) {{
+          "name" => "Stained Tshirt",
+        }}
+        let(:result) { subject.line_items.first }
+        before do
+          subject.add_shopify_obj shopify_order, shopify_api
+        end
 
-        expect(subject.line_items).to be_empty
-        subject.line_items.first
+        it 'is processed' do
+          expect(result.name).to eq "Stained Tshirt"
+        end
+
+        it 'is alone' do
+          expect(subject.line_items).to have(1).item
+        end
       end
+
     end
 
   end

@@ -2,6 +2,13 @@ class LineItem
 
   attr_reader :sku
 
+
+  attr_reader :name,
+              :quantity,
+              :price,
+              :promo_total,
+              :is_gift_card
+
   def add_shopify_obj shopify_li, shopify_api
     @shopify_id = shopify_li['id']
     @shopify_parent_id = shopify_li['product_id']

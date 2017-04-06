@@ -4,6 +4,8 @@ class Order
   attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals, :shipping_lines, :placed_on
 
   def add_shopify_obj shopify_order, shopify_api
+    @shopify_order = shopify_order
+
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @order_number = shopify_order['order_number']
     @shopify_id = shopify_order['id']
@@ -45,8 +47,7 @@ class Order
 
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|
-      line_item = LineItem.new
-      shopify_li['total_discount'] = shopify_li['price'].to_f / @totals_item * @totals_discounts / shopify_li['quantity'].to_i unless shopify_li['total_discount'].to_f > 0.0 or @totals_item == 0.0 or @totals_discounts == 0.0
+      line_item = LineItem.new( order_percentage: calculate_order_discount_percentage )
       @line_items << line_item.add_shopify_obj(shopify_li, shopify_api)
     end
 
@@ -92,6 +93,15 @@ class Order
     self
   end
 
+
+  def calculate_order_discount_percentage
+    unless @shopify_order['discount_codes'].empty?
+      BigDecimal.new(@shopify_order['discount_codes'][0]['amount']) / BigDecimal.new(@shopify_order['total_line_items_price'])
+    else
+      0.0
+    end
+  end
+
   def wombat_obj
     {
       'id' => @store_name.upcase + '-' + @shopify_id.to_s,
@@ -109,22 +119,23 @@ class Order
         'tax' => @totals_tax,
         'shipping' => @totals_shipping,
         'payment' => @totals_payment,
-        'order' => @totals_order
+        'order' => @totals_order,
+        'totals_discounts' => @totals_discounts,
       },
       'line_items' => Util.wombat_array(@line_items),
       'adjustments' => [
         {
           'name' => 'Tax',
           'value' => @totals_tax
-        }#,
+        },
         # {
         #   'name' => 'Shipping',
         #   'value' => @totals_shipping
         # },
-        #{
-        #  'name' => 'Discounts',
-        #  'value' => @totals_discounts
-        #}
+        {
+          'name' => 'Discounts',
+          'value' => @totals_discounts
+        },
       ],
       'shipping_address' => @shipping_address,
       'billing_address' => @billing_address,

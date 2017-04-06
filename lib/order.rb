@@ -82,11 +82,11 @@ class Order
     @shipments = Array.new
     if shopify_order['source'] == 'browser'
       shopify_order['fulfillments'].each_with_index do |shopify_shipment, idx|
-        shipment = Shipment.new
+        shipment = Shipment.new( order_percentage: calculate_order_discount_percentage )
         @shipments << shipment.add_shopify_obj(shopify_shipment, shopify_api, self, @shipping_lines[idx])
       end
     else
-      shipment = Shipment.new
+      shipment = Shipment.new( order_percentage: calculate_order_discount_percentage )
       @shipments << shipment.add_shopify_obj_from_pos_line_items(shopify_order['line_items'], shopify_api, self)
     end
 

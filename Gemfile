@@ -18,6 +18,7 @@ end
 group :test do
   gem 'vcr'
   gem 'rspec'
+  gem 'rspec-collection_matchers'
   gem 'webmock'
   gem 'guard-rspec'
   gem 'terminal-notifier-guard'

@@ -2,6 +2,10 @@ class Shipment
 
   attr_reader :id, :shopify_id, :shopify_order_id, :status
 
+  def initialize(order_percentage: 0)
+    @order_percentage = order_percentage
+  end
+
   def add_shopify_obj shopify_shipment, shopify_api, shopify_order=nil, shipping_line=nil
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @shopify_id = shopify_shipment['id']
@@ -14,13 +18,13 @@ class Shipment
     shipping_line ||= {}
     @cost = shipping_line['price']
     @shipping_method = shipping_line['title']
-    
+
     @tracking = shopify_shipment['tracking_number']
     @shipped_at = shopify_shipment['created_at']
 
     @line_items = Array.new
     shopify_shipment['line_items'].each do |shopify_li|
-      line_item = LineItem.new
+      line_item = LineItem.new( order_percentage: @order_percentage )
       line_item.add_shopify_obj(shopify_li, shopify_api)
       @line_items << line_item.add_shopify_obj(shopify_li, shopify_api)
     end
@@ -47,7 +51,7 @@ class Shipment
 
     @line_items = Array.new
     shopify_line_items.each do |shopify_li|
-      line_item = LineItem.new
+      line_item = LineItem.new( order_percentage: @order_percentage )
       line_item.add_shopify_obj(shopify_li, shopify_api)
       @line_items << line_item.add_shopify_obj(shopify_li, shopify_api)
     end

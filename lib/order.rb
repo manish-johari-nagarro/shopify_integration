@@ -4,6 +4,8 @@ class Order
   attr_reader :shopify_id, :email, :shipping_address, :billing_address, :store_name, :source, :line_items, :shipments, :totals, :shipping_lines, :placed_on
 
   def add_shopify_obj shopify_order, shopify_api
+    @shopify_order = shopify_order
+
     @store_name = Util.shopify_host(shopify_api.config).split('.')[0]
     @order_number = shopify_order['order_number']
     @shopify_id = shopify_order['id']
@@ -16,7 +18,7 @@ class Order
     @placed_on = shopify_order['created_at']
     @totals_item = shopify_order['total_line_items_price'].to_f
     @totals_tax = shopify_order['total_tax'].to_f
-    @totals_discounts = shopify_order['total_discounts'].to_f
+    @totals_discounts = -1 * shopify_order['total_discounts'].to_f
 
     @payments = Array.new
     @totals_payment = 0.00
@@ -45,7 +47,7 @@ class Order
 
     @line_items = Array.new
     shopify_order['line_items'].each do |shopify_li|
-      line_item = LineItem.new
+      line_item = LineItem.new( order_percentage: calculate_order_discount_percentage )
       @line_items << line_item.add_shopify_obj(shopify_li, shopify_api)
     end
 
@@ -80,15 +82,24 @@ class Order
     @shipments = Array.new
     if shopify_order['source'] == 'browser'
       shopify_order['fulfillments'].each_with_index do |shopify_shipment, idx|
-        shipment = Shipment.new
+        shipment = Shipment.new( order_percentage: calculate_order_discount_percentage )
         @shipments << shipment.add_shopify_obj(shopify_shipment, shopify_api, self, @shipping_lines[idx])
       end
     else
-      shipment = Shipment.new
+      shipment = Shipment.new( order_percentage: calculate_order_discount_percentage )
       @shipments << shipment.add_shopify_obj_from_pos_line_items(shopify_order['line_items'], shopify_api, self)
     end
 
     self
+  end
+
+
+  def calculate_order_discount_percentage
+    unless @shopify_order['discount_codes'].empty?
+      BigDecimal.new(@shopify_order['discount_codes'][0]['amount']) / BigDecimal.new(@shopify_order['total_line_items_price'])
+    else
+      0.0
+    end
   end
 
   def wombat_obj
@@ -108,7 +119,8 @@ class Order
         'tax' => @totals_tax,
         'shipping' => @totals_shipping,
         'payment' => @totals_payment,
-        'order' => @totals_order
+        'order' => @totals_order,
+        'totals_discounts' => @totals_discounts,
       },
       'line_items' => Util.wombat_array(@line_items),
       'adjustments' => [
@@ -123,7 +135,7 @@ class Order
         {
           'name' => 'Discounts',
           'value' => @totals_discounts
-        }
+        },
       ],
       'shipping_address' => @shipping_address,
       'billing_address' => @billing_address,

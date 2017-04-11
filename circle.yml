@@ -22,21 +22,14 @@ deployment:
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
       - docker tag quay.io/$DOCKER_USER/shopify_integration quay.io/$DOCKER_USER/shopify_integration:integration
-      - docker push quay.io/$DOCKER_USER/shopify_integration:integration
+      - docker push quay.io/$DOCKER_USER/shopify_integration:production
   staging:
     branch: staging
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
       - docker tag quay.io/$DOCKER_USER/shopify_integration quay.io/$DOCKER_USER/shopify_integration:staging
       - docker push quay.io/$DOCKER_USER/shopify_integration:staging
-  production:
-    branch: production
-    commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
-      - docker tag quay.io/$DOCKER_USER/shopify_integration quay.io/$DOCKER_USER/shopify_integration:production
-      - docker push quay.io/$DOCKER_USER/shopify_integration:production
   any:
-    branch: /.*/
+    branch: /^((?!(master|staging)).)*$/
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS https://quay.io/v1/
-
+      - sleep 0

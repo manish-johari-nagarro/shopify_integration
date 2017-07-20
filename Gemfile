@@ -5,9 +5,10 @@ gem 'sinatra'
 gem 'tilt', '~> 1.4.1'
 gem 'tilt-jbuilder'
 gem 'jbuilder', '2.0.7'
-gem 'capistrano'
 gem 'rest-client'
 gem 'require_all'
+gem 'mina', '~> 0.3.6'
+gem 'mina-puma', require: false
 
 group :development do
   gem 'shotgun'

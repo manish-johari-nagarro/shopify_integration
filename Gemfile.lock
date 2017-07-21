@@ -135,6 +135,7 @@ DEPENDENCIES
   mina (~> 0.3.6)
   mina-puma
   pry
+  puma (~> 3.0)
   rack-test
   rb-fsevent (~> 0.9.1)
   require_all

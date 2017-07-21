@@ -7,6 +7,7 @@ gem 'tilt-jbuilder'
 gem 'jbuilder', '2.0.7'
 gem 'rest-client'
 gem 'require_all'
+gem 'puma', '~> 3.0'
 gem 'mina', '~> 0.3.6'
 gem 'mina-puma', require: false
 

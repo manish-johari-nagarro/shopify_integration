@@ -14,7 +14,7 @@ require_relative 'mina_systemd'
 set :rails_env, 'production'
 set :domain, '52.90.168.81'
 set :repository, "git@github.com:bestmadeco/shopify_integration.git"
-set :branch, 'master'
+set :branch, 'mina-deploy'
 set :rbenv_path, "/opt/rbenv"
 set :deploy_to, "/home/deploy/apps/shopify_integration_#{rails_env}"
 #set :identity_file, "~/.ssh/bestmade.pem"

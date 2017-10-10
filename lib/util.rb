@@ -53,7 +53,7 @@ class Util
   end
 
   def self.set_config wombat_config 
-    @@config ||= wombat_config
+    @@config = wombat_config
   end
 
   def self.config

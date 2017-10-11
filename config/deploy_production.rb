@@ -12,11 +12,7 @@ require_relative 'mina_systemd'
 #   branch       - Branch name to deploy. (needed by mina/git)
 
 set :rails_env, 'production'
-<<<<<<< Updated upstream
-set :domain, '52.90.168.81'
-=======
 set :domain, '34.201.2.109'
->>>>>>> Stashed changes
 set :repository, "git@github.com:bestmadeco/shopify_integration.git"
 set :branch, 'mina-deploy'
 set :rbenv_path, "/opt/rbenv"
@@ -64,12 +60,7 @@ task :deploy => :environment do
     invoke :'bundle:install'
     to :launch do
       #Puma
-<<<<<<< Updated upstream
-      invoke :'puma:phased_restart'
-      invoke :"systemctl:restart['globol_#{rails_env}']"
-=======
       invoke :"systemctl:restart['puma_shopify_integration_#{rails_env}']"
->>>>>>> Stashed changes
       invoke :"systemctl:restart['nginx']"
       #Sidekiq
       #invoke :'sidekiq:restart'
